@@ -1,0 +1,3 @@
+= CompletableFuture experimentation
+
+This project consists of various small experiments with CompletableFutures to form the basis of a blog I'll be writing in the near (ish) future, which will mainly concern itself with error propagation in CompletableFutures.
