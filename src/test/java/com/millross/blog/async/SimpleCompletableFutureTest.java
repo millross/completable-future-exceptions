@@ -15,8 +15,14 @@ public class SimpleCompletableFutureTest {
     @Test
     public void testSimpleFutureCompletion() throws Exception {
         final CompletableFuture<Integer> future = blockingSuccessFuture();
-        final Integer val = future.get();
-        assertThat(val, is(1));
+        assertThat(future.get(), is(1));
+    }
+
+    @Test
+    public void demoThenApply() throws Exception {
+        final CompletableFuture<Integer> future = blockingSuccessFuture()
+                .thenApply(i -> i + 3);
+        assertThat(future.get(), is(4));
     }
 
     public CompletableFuture<Integer> blockingSuccessFuture() {
