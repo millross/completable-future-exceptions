@@ -37,12 +37,20 @@ public class SimpleCompletableFutureTest {
     public void demoThenCompose() throws Exception {
         // We'll use one future to specify how long a subsequent future will take
         final CompletableFuture<Integer> future = supplyAsync(delayedValueSupplier(3), executor)
-                .thenApply(i -> {
-                    System.out.println("First future completed, " + i);
-                    return i;
-                })
                 .thenCompose(i -> supplyAsync(delayedValueSupplier(2, i * 100), executor));
         assertThat(future.get(), is(2));
+    }
+
+    @Test
+    public void demoMultiStagePipeline() throws Exception {
+        // We'll use one future to specify how long a subsequent future will take
+        final CompletableFuture<Integer> future = supplyAsync(delayedValueSupplier(3), executor)
+                .thenApply(i -> {
+                    System.out.println("First future completed, " + i);
+                    return i + 1;
+                })
+                .thenCompose(i -> supplyAsync(delayedValueSupplier(i + 2, i * 100), executor));
+        assertThat(future.get(), is(6));
     }
 
     public Supplier<Integer> delayedValueSupplier(final int value) {
