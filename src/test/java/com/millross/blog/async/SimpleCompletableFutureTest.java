@@ -41,35 +41,23 @@ public class SimpleCompletableFutureTest {
                     System.out.println("First future completed, " + i);
                     return i;
                 })
-                .thenCompose(i -> specifiedDelayFuture(i * 100, 2));
+                .thenCompose(i -> supplyAsync(delayedValueSupplier(2, i * 100), executor));
         assertThat(future.get(), is(2));
     }
 
     public Supplier<Integer> delayedValueSupplier(final int value) {
+        return delayedValueSupplier(value, 1000);
+    }
+
+    public Supplier<Integer> delayedValueSupplier(final int value, final int delayMs) {
         return () -> {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(delayMs);
             } catch (InterruptedException e) {
                 throw new RuntimeException("Problem while waiting to return value");
             }
             return value;
         };
-    }
-
-    public CompletableFuture<Integer> specifiedDelayFuture(final int delay, final int finalValue) {
-        final CompletableFuture<Integer> future = new CompletableFuture<>();
-        final Thread futureThread = new Thread(() -> {
-            try {
-                Thread.sleep(delay);
-                future.complete(finalValue);
-            } catch (Throwable t) {
-                future.completeExceptionally(t);
-            }
-
-        });
-        // Kick off processing
-        futureThread.run();
-        return future;
     }
 
 }
