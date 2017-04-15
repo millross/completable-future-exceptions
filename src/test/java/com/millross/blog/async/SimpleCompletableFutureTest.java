@@ -3,6 +3,7 @@ package com.millross.blog.async;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.hamcrest.CoreMatchers.is;
@@ -17,6 +18,16 @@ public class SimpleCompletableFutureTest extends CompletableFutureTestBase {
     public void testSimpleFutureCompletion() throws Exception {
         final CompletableFuture<Integer> future = supplyAsync(delayedValueSupplier(1), executor);
         assertThat(future.get(), is(1));
+    }
+
+    @Test(expected = IntentionalException.class)
+    public void testExceptionalCompletion() throws Throwable {
+        final CompletableFuture<Integer> future = delayedExceptionalCompletion(new IntentionalException());
+        try {
+            future.join();
+        } catch (CompletionException ex) {
+            throw (ex.getCause());
+        }
     }
 
     @Test

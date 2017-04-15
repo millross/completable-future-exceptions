@@ -1,5 +1,6 @@
 package com.millross.blog.async;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
@@ -28,5 +29,19 @@ public class CompletableFutureTestBase {
         };
     }
 
+    public CompletableFuture<Integer> delayedExceptionalCompletion(final Throwable t) {
+        return delayedExceptionalCompletion(t, 1000);
+    }
+
+    public CompletableFuture<Integer> delayedExceptionalCompletion(final Throwable t, final int delayMs) {
+        final CompletableFuture<Integer> future = new CompletableFuture<>();
+        try {
+            Thread.sleep(delayMs);
+            future.completeExceptionally(t);
+        } catch (InterruptedException ex) {
+            throw new RuntimeException("Problem waiting to complete future exceptionally");
+        }
+        return future;
+    }
 
 }
