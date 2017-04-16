@@ -2,8 +2,10 @@ package com.millross.blog.async;
 
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.hamcrest.CoreMatchers.is;
@@ -28,6 +30,27 @@ public class SimpleCompletableFutureTest extends CompletableFutureTestBase {
         } catch (CompletionException ex) {
             throw (ex.getCause());
         }
+    }
+
+    @Test(expected = IntentionalException.class)
+    public void exceptionCompletionAsSeenFromNextStage() throws Throwable {
+
+        // This is where we'll store the exception seen in the next stage
+        final AtomicReference<Throwable> thrownException = new AtomicReference<>(null);
+
+        final CompletableFuture<Integer> future = delayedExceptionalCompletion(new IntentionalException())
+                .whenComplete((v, t) -> {
+                    if (t != null) {
+                        thrownException.set(t);
+                    }
+                });
+
+        try {
+            future.join();
+        } catch (CompletionException ex) {
+            throw (Optional.ofNullable(thrownException.get()).orElse(ex));
+        }
+
     }
 
     @Test
