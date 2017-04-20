@@ -32,7 +32,7 @@ public class ExceptionsInThenApplyTest extends CompletableFutureTestBase{
 
     }
 
-    @Test(expected = CompletionException.class)
+    @Test(expected = IntentionalException.class)
     public void exceptionCallingThenApplyAsObservedFromNextStage() throws Throwable {
         final AtomicReference<Throwable> thrownException = new AtomicReference<>(null);
         final CompletableFuture<Object> future = CompletableFuture.supplyAsync(delayedValueSupplier(1), executor)
@@ -47,7 +47,7 @@ public class ExceptionsInThenApplyTest extends CompletableFutureTestBase{
         try {
             future.join();
         } catch (CompletionException ex) {
-            throw (Optional.ofNullable(thrownException.get()).orElse(ex));
+            throw (Optional.ofNullable(thrownException.get().getCause()).orElse(new RuntimeException("No thrown exception")));
         }
     }
 
