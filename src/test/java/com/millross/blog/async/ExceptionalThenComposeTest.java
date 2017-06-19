@@ -12,9 +12,28 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ExceptionalThenComposeTest extends CompletableFutureTestBase {
 
+    /**
+     * Note that while we throw an IntentionalException, get() causes it to be wrapped in an ExecutionException, in
+     * effect, get acts as a subsequent completion stage from the point of view of exception propagation.
+     * @throws Exception
+     */
+    @Test(expected = IntentionalException.class)
+    public void exceptionCallingThenCompose() throws Throwable {
+        final CompletableFuture<Integer> future = CompletableFuture.supplyAsync(delayedValueSupplier(1), executor)
+                .thenCompose(i -> {
+                    throw new IntentionalException();
+                });
+
+        try {
+            future.join();
+        } catch (CompletionException ex) {
+            throw ex.getCause();
+        }
+
+    }
 
     @Test(expected = IntentionalException.class)
-    public void exceptionCallingThenApplyAsSeenFromNextStage() throws Throwable {
+    public void exceptionCallingThenComposerAsSeenFromNextStage() throws Throwable {
         final AtomicReference<Throwable> thrownException = new AtomicReference<>(null);
         final CompletableFuture<Object> future = CompletableFuture.supplyAsync(delayedValueSupplier(1), executor)
                 .thenCompose(i -> {
