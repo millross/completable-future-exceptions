@@ -32,4 +32,26 @@ public class ExceptionalPipelineTest extends CompletableFutureTestBase {
         }
     }
 
+    @Test(expected = IntentionalException.class)
+    public void exceptionDuringFirstTransformationInPipeline() throws Throwable {
+        // This is where we'll store the exception seen in the next stage
+        final AtomicReference<Throwable> thrownException = new AtomicReference<>(null);
+
+        final CompletableFuture<Integer> future = CompletableFuture.supplyAsync(delayedValueSupplier(1), executor)
+                .thenApply(i -> {
+                    throw new IntentionalException();
+                })
+                .thenCompose(i -> CompletableFuture.supplyAsync(delayedValueSupplier(1), executor))
+                .whenComplete((v, t) -> {
+                    if (t != null) {
+                        thrownException.set(t);
+                    }
+                });
+        try {
+            future.join();
+        } catch (CompletionException ex) {
+            throw (Optional.ofNullable(thrownException.get().getCause()).orElse(ex));
+        }
+    }
+
 }
